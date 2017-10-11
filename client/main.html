@@ -5,12 +5,19 @@
 
 <body>
   <h1>Welcome to oauth2 Tutorial!</h1>
-
-  {{> hello}}
-{{> configureLoginServiceDialogForImgur}}
+    <p>
+        {{>loginButtons}}
+        {{>main}}
+        {{>auth}}
+    </p>
 </body>
 
-<template name="hello">
-  <button>Click Me</button>
-  <p>You've pressed the button {{counter}} times.</p>
+<template name="main">
+  <button>Get Metadata</button>
+
+</template>
+
+<template name="auth">
+    <button>Get auth</button>
+
 </template>

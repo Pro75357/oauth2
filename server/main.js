@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 
-import '../imports/imgur/imgur_server.js';
+import '../imports/api/auth.js';
 
 
 Meteor.startup(() => {

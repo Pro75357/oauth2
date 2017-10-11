@@ -4,40 +4,40 @@
  * Define the base object namespace. By convention we use the service name
  * in PascalCase (aka UpperCamelCase). Note that this is defined as a package global.
  */
-Imgur = {};
+Epic = {};
 
 /**
  * Boilerplate hook for use by underlying Meteor code
  */
-Imgur.retrieveCredential = (credentialToken, credentialSecret) => {
+Epic.retrieveCredential = (credentialToken, credentialSecret) => {
   return OAuth.retrieveCredential(credentialToken, credentialSecret);
 };
 
 /**
  * Define the fields we want. Note that they come from various places...
- *  id, reputation, created: from https://api.imgur.com/3/account/{username}
- *  email: from https://api.imgur.com/3/account/{username}/settings
+ *  id, reputation, created: from https://api.epic.com/3/account/{username}
+ *  email: from https://api.epic.com/3/account/{username}/settings
  * Note that we *must* have an id. Also, this array is referenced in the
- * accounts-imgur package, so we should probably keep this name and structure.
+ * accounts-epic package, so we should probably keep this name and structure.
  */
-Imgur.whitelistedFields = ['id', 'email', 'reputation', 'created'];
+Epic.whitelistedFields = ['id', 'email', 'reputation', 'created'];
 
 /**
  * Register this service with the underlying OAuth handler
  * (name, oauthVersion, urls, handleOauthRequest):
- *  name = 'imgur'
+ *  name = 'epic'
  *  oauthVersion = 2
  *  urls = null for OAuth 2
  *  handleOauthRequest = function(query) returns {serviceData, options} where options is optional
- * serviceData will end up in the user's services.imgur
+ * serviceData will end up in the user's services.epic
  */
-OAuth.registerService('imgur', 2, null, function(query) {
+OAuth.registerService('epic', 2, null, function(query) {
 
   /**
    * Make sure we have a config object for subsequent use (boilerplate)
    */
   const config = ServiceConfiguration.configurations.findOne({
-    service: 'imgur'
+    service: 'epic'
   });
   if (!config) {
     throw new ServiceConfiguration.ConfigError();
@@ -45,7 +45,7 @@ OAuth.registerService('imgur', 2, null, function(query) {
 
   /**
    * Get the token and username (Meteor handles the underlying authorization flow).
-   * Note that the username comes from from this request in Imgur.
+   * Note that the username comes from from this request in Epic.
    */
   const response = getTokens(config, query);
   const accessToken = response.accessToken;
@@ -81,7 +81,7 @@ OAuth.registerService('imgur', 2, null, function(query) {
   if (response.refreshToken) {
     serviceData.refreshToken = response.refreshToken;
   }
-  _.extend(serviceData, _.pick(identity, Imgur.whitelistedFields));
+  _.extend(serviceData, _.pick(identity, Epic.whitelistedFields));
 
   /**
    * Return the serviceData object along with an options object containing
@@ -105,7 +105,7 @@ OAuth.registerService('imgur', 2, null, function(query) {
  * repectively.
  */
 
-/** getTokens exchanges a code for a token in line with Imgur's documentation
+/** getTokens exchanges a code for a token in line with Epic's documentation
  *
  *  returns an object containing:
  *   accessToken        {String}
@@ -120,7 +120,7 @@ OAuth.registerService('imgur', 2, null, function(query) {
  */
 const getTokens = function(config, query) {
 
-  const endpoint = 'https://api.imgur.com/oauth2/token';
+  const endpoint = 'https://api.epic.com/oauth2/token';
 
   /**
    * Attempt the exchange of code for token
@@ -138,7 +138,7 @@ const getTokens = function(config, query) {
       });
 
   } catch (err) {
-    throw _.extend(new Error(`Failed to complete OAuth handshake with Imgur. ${err.message}`), {
+    throw _.extend(new Error(`Failed to complete OAuth handshake with Epic. ${err.message}`), {
       response: err.response
     });
   }
@@ -148,7 +148,7 @@ const getTokens = function(config, query) {
     /**
      * The http response was a json object with an error attribute
      */
-    throw new Error(`Failed to complete OAuth handshake with Imgur. ${response.data.error}`);
+    throw new Error(`Failed to complete OAuth handshake with Epic. ${response.data.error}`);
 
   } else {
 
@@ -171,10 +171,10 @@ const getTokens = function(config, query) {
 };
 
 /**
- * getAccount gets the basic Imgur account data
+ * getAccount gets the basic Epic account data
  *
  *  returns an object containing:
- *   id             {Integer}         The user's Imgur id
+ *   id             {Integer}         The user's Epic id
  *   url            {String}          The account username as requested in the URI
  *   bio            {String}          A basic description the user has filled out
  *   reputation     {Float}           The reputation for the account.
@@ -182,18 +182,18 @@ const getTokens = function(config, query) {
  *   pro_expiration {Integer/Boolean} False if not a pro user, their expiration date if they are.
  *
  * @param   {Object} config       The OAuth configuration object
- * @param   {String} username     The Imgur username
+ * @param   {String} username     The Epic username
  * @param   {String} accessToken  The OAuth access token
  * @return  {Object}              The response from the account request (see above)
  */
 const getAccount = function(config, username, accessToken) {
 
-  const endpoint = `https://api.imgur.com/3/account/${username}`;
+  const endpoint = `https://api.epic.com/3/account/${username}`;
   let accountObject;
 
   /**
    * Note the strange .data.data - the HTTP.get returns the object in the response's data
-   * property. Also, Imgur returns the data we want in a data property of the response data
+   * property. Also, Epic returns the data we want in a data property of the response data
    * Hence (response).data.data
    */
   try {
@@ -207,7 +207,7 @@ const getAccount = function(config, username, accessToken) {
     return accountObject;
 
   } catch (err) {
-    throw _.extend(new Error(`Failed to fetch account data from Imgur. ${err.message}`), {
+    throw _.extend(new Error(`Failed to fetch account data from Epic. ${err.message}`), {
       response: err.response
     });
   }
@@ -215,7 +215,7 @@ const getAccount = function(config, username, accessToken) {
 
 
 /**
- * getSettings gets the basic Imgur account/settings data
+ * getSettings gets the basic Epic account/settings data
  *
  *  returns an object containing:
  *   email                   {String}           The user's email address
@@ -223,27 +223,27 @@ const getAccount = function(config, username, accessToken) {
  *   public_images           {Boolean}          Automatically allow all images to be publicly accessible.
  *   album_privacy           {String}           Set the album privacy to this privacy setting on creation.
  *   pro_expiration          {Integer/Boolean}  False if not a pro user, their expiration date if they are.
- *   accepted_gallery_terms  {Boolean}          True if the user has accepted the terms of uploading to the Imgur gallery.
+ *   accepted_gallery_terms  {Boolean}          True if the user has accepted the terms of uploading to the Epic gallery.
  *   active_emails           {Array of String}  The email addresses that have been activated to allow uploading.
  *   messaging_enabled       {Boolean}          If the user is accepting incoming messages or not.
  *   blocked_users           {Array of Object}  An array of users that have been blocked from messaging, the object is blocked_id and blocked_url.
  *   show_mature             {Boolean}          True if the user has opted to have mature images displayed in gallery list endpoints.
  *
  * @param   {Object} config       The OAuth configuration object
- * @param   {String} username     The Imgur username
+ * @param   {String} username     The Epic username
  * @param   {String} accessToken  The OAuth access token
  * @return  {Object}              The response from the account request (see above)
- */
+ 
 const getSettings = function(config, username, accessToken) {
 
-  const endpoint = `https://api.imgur.com/3/account/${username}/settings`;
+  const endpoint = `https://api.epic.com/3/account/${username}/settings`;
   let settingsObject;
 
   /**
    * Note the strange .data.data - the HTTP.get returns the object in the response's data
-   * property. Also, Imgur returns the data we want in a data property of the response data
+   * property. Also, Epic returns the data we want in a data property of the response data
    * Hence (response).data.data
-   */
+   
   try {
     settingsObject = HTTP.get(
       endpoint, {
@@ -255,8 +255,9 @@ const getSettings = function(config, username, accessToken) {
     return settingsObject;
 
   } catch (err) {
-    throw _.extend(new Error(`Failed to fetch settings data from Imgur. ${err.message}`), {
+    throw _.extend(new Error(`Failed to fetch settings data from Epic. ${err.message}`), {
       response: err.response
     });
   }
 };
+*/
