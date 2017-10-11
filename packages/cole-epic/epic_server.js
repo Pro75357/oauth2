@@ -132,7 +132,7 @@ const getTokens = function(config, query) {
         params: {
           code: query.code,
           client_id: config.clientId,
-          client_secret: OAuth.openSecret(config.secret),
+    //      client_secret: OAuth.openSecret(config.secret),
           grant_type: 'authorization_code'
         }
       });
@@ -233,7 +233,7 @@ const getAccount = function(config, username, accessToken) {
  * @param   {String} username     The Epic username
  * @param   {String} accessToken  The OAuth access token
  * @return  {Object}              The response from the account request (see above)
- 
+ */
 const getSettings = function(config, username, accessToken) {
 
   const endpoint = `https://api.epic.com/3/account/${username}/settings`;
@@ -243,7 +243,7 @@ const getSettings = function(config, username, accessToken) {
    * Note the strange .data.data - the HTTP.get returns the object in the response's data
    * property. Also, Epic returns the data we want in a data property of the response data
    * Hence (response).data.data
-   
+   */
   try {
     settingsObject = HTTP.get(
       endpoint, {
@@ -260,4 +260,3 @@ const getSettings = function(config, username, accessToken) {
     });
   }
 };
-*/
