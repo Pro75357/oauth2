@@ -1,5 +1,7 @@
 'use strict';
 
+var parseString = require('xml2js').parseString;
+
 /**
  * Define the base object namespace. By convention we use the service name
  * in PascalCase (aka UpperCamelCase). Note that this is defined as a package global.
@@ -15,12 +17,11 @@ Epic.retrieveCredential = (credentialToken, credentialSecret) => {
 
 /**
  * Define the fields we want. Note that they come from various places...
- *  id, reputation, created: from https://api.epic.com/3/account/{username}
- *  email: from https://api.epic.com/3/account/{username}/settings
+
  * Note that we *must* have an id. Also, this array is referenced in the
  * accounts-epic package, so we should probably keep this name and structure.
  */
-Epic.whitelistedFields = ['id', 'email', 'reputation', 'created'];
+Epic.whitelistedFields = ['id'];
 
 /**
  * Register this service with the underlying OAuth handler
@@ -120,7 +121,7 @@ OAuth.registerService('epic', 2, null, function(query) {
  */
 const getTokens = function(config, query) {
 
-  const endpoint = 'https://api.epic.com/oauth2/token';
+    const endpoint = 'https://open-ic.epic.com/Argonaut/oauth2/token';
 
   /**
    * Attempt the exchange of code for token
@@ -133,7 +134,8 @@ const getTokens = function(config, query) {
           code: query.code,
           client_id: config.clientId,
     //      client_secret: OAuth.openSecret(config.secret),
-          grant_type: 'authorization_code'
+          grant_type: 'authorization_code',
+          redirect_uri: 'https://localhost:3000/test'
         }
       });
 
@@ -161,11 +163,12 @@ const getTokens = function(config, query) {
      *
      * Return an appropriately constructed object
      */
-    return {
+     // console.log(response.data.content)
+      return {
       accessToken: response.data.access_token,
       refreshToken: response.data.refresh_token,
       expiresIn: response.data.expires_in,
-      username: response.data.account_username
+      username: response.data.patient
     };
   }
 };
@@ -188,7 +191,7 @@ const getTokens = function(config, query) {
  */
 const getAccount = function(config, username, accessToken) {
 
-  const endpoint = `https://api.epic.com/3/account/${username}`;
+    const endpoint = `https://open-ic.epic.com/argonaut/api/FHIR/Argonaut/Patient/${username}`;
   let accountObject;
 
   /**
@@ -200,10 +203,14 @@ const getAccount = function(config, username, accessToken) {
     accountObject = HTTP.get(
       endpoint, {
         headers: {
-          Authorization: `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`,
         }
       }
-    ).data.data;
+    )
+    console.log(accountObject)
+    parseString(accountObject.content, function (err, res) {
+        console.dir(res)
+    })
     return accountObject;
 
   } catch (err) {
@@ -236,7 +243,7 @@ const getAccount = function(config, username, accessToken) {
  */
 const getSettings = function(config, username, accessToken) {
 
-  const endpoint = `https://api.epic.com/3/account/${username}/settings`;
+    const endpoint = `https://open-ic.epic.com/argonaut/api/FHIR/Argonaut/Patient/${username}`;
   let settingsObject;
 
   /**
@@ -248,7 +255,8 @@ const getSettings = function(config, username, accessToken) {
     settingsObject = HTTP.get(
       endpoint, {
         headers: {
-          Authorization: `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`,
+
         }
       }
     ).data.data;

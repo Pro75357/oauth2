@@ -9,19 +9,23 @@ var metadataURL = 'https://open-ic.epic.com/Argonaut/api/FHIR/Argonaut/metadata'
 var authURL = 'https://open-ic.epic.com/Argonaut/oauth2/authorize' // Authorization URL
 var tokenURL = 'https://open-ic.epic.com/Argonaut/oauth2/token' //token URL
 
+
+
+
+
 // app variables
 var client_id = '1c3615fd-4b92-4f58-96dd-4cb2cf213e6f' //from Epic
 //var ClientSecret = ''
 
-var redirect_uri = 'http://localhost:3000/test'
+var redirect_uri = 'https://localhost:3000/_oauth/epic'
 
-const loginUrl = authURL + '?response_type=code' + '&client_id=' + client_id +  '&redirect_uri=' + redirect_uri
+const loginUrl = authURL + '?response_type=code&client_id=' + client_id +  '&redirect_uri=' + redirect_uri
 
 Template.main.events({
   'click button'(event, instance) {
     // increment the counter when button is clicked
       var test
-      Meteor.call('getMetadata'), function (err, res) {
+      Meteor.call('getTokens'), function (err, res) {
           test = res;
       }
       console.log(test)
