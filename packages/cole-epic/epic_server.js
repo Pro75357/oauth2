@@ -1,7 +1,5 @@
 'use strict';
 
-var parseString = require('xml2js').parseString;
-
 /**
  * Define the base object namespace. By convention we use the service name
  * in PascalCase (aka UpperCamelCase). Note that this is defined as a package global.
@@ -21,7 +19,7 @@ Epic.retrieveCredential = (credentialToken, credentialSecret) => {
  * Note that we *must* have an id. Also, this array is referenced in the
  * accounts-epic package, so we should probably keep this name and structure.
  */
-Epic.whitelistedFields = ['id'];
+Epic.whitelistedFields = ['id','name'];
 
 /**
  * Register this service with the underlying OAuth handler
@@ -92,7 +90,7 @@ OAuth.registerService('epic', 2, null, function(query) {
     serviceData: serviceData,
     options: {
       profile: {
-        name: response.username // comes from the token request
+        username: response.username // comes from the token request
       }
     }
   };
@@ -204,13 +202,13 @@ const getAccount = function(config, username, accessToken) {
       endpoint, {
         headers: {
             Authorization: `Bearer ${accessToken}`,
-        }
+            Accept: 'application/fhir+json'
+            }        
       }
+      
     )
     console.log(accountObject)
-    parseString(accountObject.content, function (err, res) {
-        console.dir(res)
-    })
+
     return accountObject;
 
   } catch (err) {
@@ -259,7 +257,7 @@ const getSettings = function(config, username, accessToken) {
 
         }
       }
-    ).data.data;
+    )
     return settingsObject;
 
   } catch (err) {
