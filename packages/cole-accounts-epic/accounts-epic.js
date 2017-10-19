@@ -37,8 +37,11 @@ if (Meteor.isClient) {
        * Logged in user gets whitelisted fields + accessToken + expiresAt.
        */
       Epic.whitelistedFields.concat(['accessToken', 'expiresAt']), // don't publish refresh token
-      function(subfield) {
-        return 'services.Epic.' + subfield;
+      function (subfield) {
+         // var testing = 'services.epic.' + subfield;
+          //console.log(testing)
+
+        return 'services.epic.' + subfield;
       }),
 
     forOtherUsers: _.map(

@@ -64,7 +64,7 @@ OAuth.registerService('epic', 2, null, function(query) {
   const identity = _.extend(
       { username },
 
-    getAccount(config, username, accessToken),
+   patientName = getPatientName(config, username, accessToken),
   //  getSettings(config, username, accessToken)
   );
 
@@ -79,12 +79,12 @@ OAuth.registerService('epic', 2, null, function(query) {
    */
   const serviceData = {
     accessToken,
-    expiresAt: (+new Date) + (1000 * response.expiresIn)
+    expiresAt: (+new Date) + (1000 * response.expiresIn),
+    id: response.username // comes from the token request
   };
   if (response.refreshToken) {
     serviceData.refreshToken = response.refreshToken;
   }
-  _.extend(serviceData, _.pick(identity, Epic.whitelistedFields));
 
   /**
    * Return the serviceData object along with an options object containing
@@ -94,10 +94,8 @@ OAuth.registerService('epic', 2, null, function(query) {
     serviceData: serviceData,
     options: {
       profile: {
-          id: response.username // comes from the token request
-          ,name: 'PlaceholderName'
+          name: patientName
         },
-        id: response.username
     }
   };
 });
@@ -173,7 +171,6 @@ const getTokens = function(config, query) {
       refreshToken: response.data.refresh_token,  // Epic does not support this (no client secret)
       expiresIn: response.data.expires_in,
       username: response.data.patient,
-      id: response.data.patient
     };
   }
 };
@@ -197,7 +194,35 @@ const getTokens = function(config, query) {
 
  */
 
-//const patientName = GetPatientName(username, GetAccesstoken(options))
+const getPatientName = function (config, username, accessToken) {
+    const endpoint = 'https://open-ic.epic.com/argonaut/api/FHIR/Argonaut/Patient/' + username;
+    let patientName;
+
+    /**
+     * Note the strange .data.data - the HTTP.get returns the object in the response's data
+     * property. Also, Epic returns the data we want in a data property of the response data
+     * Hence (response).data.data
+     */
+    try {
+        patientCall = HTTP.get(
+            endpoint, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    Accept: 'application/json'
+                }
+            }
+        )
+        patientName = patientCall.data.name[0].given[0] //Gives the first given name
+        console.log(patientName)
+        return patientName;
+
+    } catch (err) {
+        throw _.extend(new Error(`Failed to fetch patient data from Epic. ${err.message}`), {
+            response: err.response
+        });
+    }
+}
+/*
 const getAccount = function(config, username, accessToken) {
 
     const endpoint = `https://open-ic.epic.com/argonaut/api/FHIR/Argonaut/Patient/${username}`;
@@ -207,7 +232,7 @@ const getAccount = function(config, username, accessToken) {
    * Note the strange .data.data - the HTTP.get returns the object in the response's data
    * property. Also, Epic returns the data we want in a data property of the response data
    * Hence (response).data.data
-   */
+
   try {
     accountObject = HTTP.get(
       endpoint, {
@@ -229,7 +254,7 @@ const getAccount = function(config, username, accessToken) {
   }
 };
 
-
+   */
 /**
  * getSettings gets the basic Epic account/settings data
  *
@@ -249,7 +274,7 @@ const getAccount = function(config, username, accessToken) {
  * @param   {String} username     The Epic username
  * @param   {String} accessToken  The OAuth access token
  * @return  {Object}              The response from the account request (see above)
- */
+
 const getSettings = function(config, username, accessToken) {
 
     const endpoint = `https://open-ic.epic.com/argonaut/api/FHIR/Argonaut/Patient/${username}`;
@@ -259,7 +284,7 @@ const getSettings = function(config, username, accessToken) {
    * Note the strange .data.data - the HTTP.get returns the object in the response's data
    * property. Also, Epic returns the data we want in a data property of the response data
    * Hence (response).data.data
-   */
+
   try {
     settingsObject = HTTP.get(
       endpoint, {
@@ -277,3 +302,4 @@ const getSettings = function(config, username, accessToken) {
     });
   }
 };
+ */
