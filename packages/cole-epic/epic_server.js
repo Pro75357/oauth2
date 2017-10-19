@@ -32,12 +32,14 @@ Epic.whitelistedFields = ['id','name'];
  */
 OAuth.registerService('epic', 2, null, function(query) {
 
+  const state = query.state
+
   /**
    * Make sure we have a config object for subsequent use (boilerplate)
    */
   const config = ServiceConfiguration.configurations.findOne({
     service: 'epic'
-  });
+    });
   if (!config) {
     throw new ServiceConfiguration.ConfigError();
   }
@@ -50,6 +52,7 @@ OAuth.registerService('epic', 2, null, function(query) {
   const accessToken = response.accessToken;
   const username = response.username;
 
+    //console.dir(response)
   /**
    * If we got here, we can now request data from the account endpoints
    * to complete our serviceData request.
@@ -59,7 +62,7 @@ OAuth.registerService('epic', 2, null, function(query) {
   const identity = _.extend(
     {username},
     getAccount(config, username, accessToken),
-    getSettings(config, username, accessToken)
+  //  getSettings(config, username, accessToken)
   );
 
   /**
@@ -68,9 +71,7 @@ OAuth.registerService('epic', 2, null, function(query) {
    *  expiresAt, as a ms epochtime
    *  refreshToken, if there is one
    *  id - note that there *must* be an id property for Meteor to work with
-   *  email
-   *  reputation
-   *  created
+
    * We'll put the username into the user's profile
    */
   const serviceData = {
@@ -90,7 +91,8 @@ OAuth.registerService('epic', 2, null, function(query) {
     serviceData: serviceData,
     options: {
       profile: {
-        username: response.username // comes from the token request
+          id: response.username // comes from the token request
+          ,name: 'PlaceholderName'
       }
     }
   };
@@ -133,7 +135,7 @@ const getTokens = function(config, query) {
           client_id: config.clientId,
     //      client_secret: OAuth.openSecret(config.secret),
           grant_type: 'authorization_code',
-          redirect_uri: 'https://localhost:3000/test'
+          redirect_uri: 'https://localhost:3000/_oauth/epic'
         }
       });
 
@@ -161,10 +163,10 @@ const getTokens = function(config, query) {
      *
      * Return an appropriately constructed object
      */
-     // console.log(response.data.content)
+      console.dir(response)
       return {
       accessToken: response.data.access_token,
-      refreshToken: response.data.refresh_token,
+     // refreshToken: response.data.refresh_token,  // Epic does not support this (no client secret)
       expiresIn: response.data.expires_in,
       username: response.data.patient
     };
@@ -175,7 +177,7 @@ const getTokens = function(config, query) {
  * getAccount gets the basic Epic account data
  *
  *  returns an object containing:
- *   id             {Integer}         The user's Epic id
+ *   id             {String}         The user's Epic id
  *   url            {String}          The account username as requested in the URI
  *   bio            {String}          A basic description the user has filled out
  *   reputation     {Float}           The reputation for the account.
@@ -202,7 +204,7 @@ const getAccount = function(config, username, accessToken) {
       endpoint, {
         headers: {
             Authorization: `Bearer ${accessToken}`,
-            Accept: 'application/fhir+json'
+            Accept: 'application/json'
             }        
       }
       
