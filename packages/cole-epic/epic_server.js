@@ -62,7 +62,8 @@ OAuth.registerService('epic', 2, null, function(query) {
    * retrieved from the account and settings methods.
   */
   const identity = _.extend(
-    {username},
+      { username },
+
     getAccount(config, username, accessToken),
   //  getSettings(config, username, accessToken)
   );
@@ -95,7 +96,8 @@ OAuth.registerService('epic', 2, null, function(query) {
       profile: {
           id: response.username // comes from the token request
           ,name: 'PlaceholderName'
-      }
+        },
+        id: response.username
     }
   };
 });
@@ -191,7 +193,11 @@ const getTokens = function(config, query) {
  * @param   {String} username     The Epic username
  * @param   {String} accessToken  The OAuth access token
  * @return  {Object}              The response from the account request (see above)
+
+
  */
+
+//const patientName = GetPatientName(username, GetAccesstoken(options))
 const getAccount = function(config, username, accessToken) {
 
     const endpoint = `https://open-ic.epic.com/argonaut/api/FHIR/Argonaut/Patient/${username}`;

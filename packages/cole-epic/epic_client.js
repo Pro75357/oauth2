@@ -47,7 +47,7 @@ Epic.requestCredential = function(options, credentialRequestCompleteCallback) {
    * Epic requires response_type, client_id, and redirect_uri
    */
 
-   var redirect_uri = 'https://localhost:3000/_oauth/epic'
+   var redirect_uri = 'http://localhost:3000/_oauth/epic'
   //   var redirect_uri = 'https://localhost:3000/test'
    const loginUrl = 'https://open-ic.epic.com/Argonaut/oauth2/authorize' + '?response_type=code' + '&client_id=' + config.clientId + '&redirect_uri=' + redirect_uri + '&state=' + OAuth._stateParam(loginStyle, credentialToken);
 
