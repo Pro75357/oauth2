@@ -1,5 +1,7 @@
 'use strict';
 
+
+
 /**
  * Define the base object namespace. By convention we use the service name
  * in PascalCase (aka UpperCamelCase). Note that this is defined as a package global.
@@ -163,12 +165,13 @@ const getTokens = function(config, query) {
      *
      * Return an appropriately constructed object
      */
-      console.dir(response)
+     // console.dir(response)
       return {
       accessToken: response.data.access_token,
-     // refreshToken: response.data.refresh_token,  // Epic does not support this (no client secret)
+      refreshToken: response.data.refresh_token,  // Epic does not support this (no client secret)
       expiresIn: response.data.expires_in,
-      username: response.data.patient
+      username: response.data.patient,
+      id: response.data.patient
     };
   }
 };
@@ -209,7 +212,7 @@ const getAccount = function(config, username, accessToken) {
       }
       
     )
-    console.log(accountObject)
+    //console.dir(accountObject.data.name[0].given[0]) //Gives the first given name
 
     return accountObject;
 
