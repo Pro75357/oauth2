@@ -5,19 +5,49 @@
 
 <body>
   <h1>Welcome to oauth2 Tutorial!</h1>
-    <p>
+    <p class="pull-right">
         {{>loginButtons}}
-        {{>main}}
-        {{>auth}}
-    </p>
+        </p>
+    {{#if currentUser}}
+    <div class="container-fluid">
+        <p>
+            {{>getdata}}
+            {{>obsSearch}}
+            {{>display}}
+        </p>
+    </div>
+    {{/if}}
 </body>
 
-<template name="main">
-  <button>Get Metadata</button>
-
+<template name="getdata">
+  <button class="patient">Get Demographics</button>
 </template>
 
-<template name="auth">
-    <button>Get auth</button>
-
+<template name="obsSearch">
+    <form>
+        <label>Search for observations</label>
+        <input type="text" id="search" placeholder="Temperature" />
+        <button type="submit">Search</button>
+    </form>
 </template>
+
+<template name="display">
+    
+    <div class="container">
+        <h1>Demographics: </h1>
+        Name: {{givenName}} {{familyName}}<br />
+        Date of Birth: {{birthDate}}<br />
+        Gender: {{gender}}<br />
+        Address: 
+        {{address.line.[0]}} {{address.city}}, {{address.state}} {{address.postalCode}}
+    </div>
+    <div class="container">
+        <h1>Observations: </h1>
+        <div class="container-fluid">
+            <pre>
+                {{obsString}}
+            </pre>
+        </div>  
+    </div>
+</template>
+

@@ -1,41 +1,65 @@
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
-
+import { Session } from 'meteor/session'
 import './main.html';
 
-var baseURL = 'https://open-ic.epic.com/'; // Root URL of the epic API
-var metadataURL = 'https://open-ic.epic.com/Argonaut/api/FHIR/Argonaut/metadata' // MetaData Endpoint
-//var authURL = 'https://open-ic.epic.com/mychart/Authentication/OAuth/Start' // Authorization URL
-var authURL = 'https://open-ic.epic.com/Argonaut/oauth2/authorize' // Authorization URL
-var tokenURL = 'https://open-ic.epic.com/Argonaut/oauth2/token' //token URL
 
-
-
-
-
-// app variables
-var client_id = '1c3615fd-4b92-4f58-96dd-4cb2cf213e6f' //from Epic
-//var ClientSecret = ''
-
-var redirect_uri = 'https://localhost:3000/_oauth/epic'
-
-const loginUrl = authURL + '?response_type=code&client_id=' + client_id +  '&redirect_uri=' + redirect_uri
-
-Template.main.events({
-  'click button'(event, instance) {
-    // increment the counter when button is clicked
-      var test
-      Meteor.call('getTokens'), function (err, res) {
-          test = res;
-      }
-      console.log(test)
-
-  },
+Template.getdata.events({
+    'click .patient'(event, instance) {
+        // this is essentially a testing button
+        setData('patient')
+    },
 });
 
-Template.auth.events({
-    'click button'(event, instance) {
-        // increment the counter when button is clicked
-        var win = window.open(loginUrl,'_blank')
+Template.obsSearch.events({
+    'submit form'(event, instance) {
+        event.preventDefault()
+        if (event.target.value == ''){
+            option = 'Temperature'
+        } else {
+            option = event.target.value
         }
-    })
+        setData('Observation', option)
+    }
+})
+
+Template.display.helpers({ 
+// There is probably a better way... ?
+    data() {
+        return Session.get('patient')
+    },
+    givenName() {
+        return Session.get('patient').name[0].given[0]
+    },
+    familyName() {
+        return Session.get('patient').name[0].family[0]
+    },
+    birthDate() {
+        return Session.get('patient').birthDate
+    },
+    address() {
+        return Session.get('patient').address[0]
+    },
+    gender() {
+        return Session.get('patient').gender
+    },
+
+    obsString() {
+        return JSON.stringify(Session.get('Observation'),null,2)
+    }
+    // Observation data here
+
+
+
+})
+
+//Define client-side methods here. These can set the session variables for us in a object-based way
+    function setData(resource) {
+        Meteor.call('getData', resource, function (err, res) {
+            if (err) {
+                console.log(err)
+            }
+            Session.set(resource, res)
+        })
+    }
+
