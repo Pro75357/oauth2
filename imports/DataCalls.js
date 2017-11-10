@@ -1,32 +1,51 @@
 import { Session } from 'meteor/session'
 
-var mkFhir = require('fhir.js');
-
 Meteor.methods({
     'fhir': function () {
         var mkFhir = require('fhir.js');
-        var config = Meteor.user().config
+        var config = {
+            baseUrl: Meteor.user().services.epic.endpoint,
+            auth: {
+                bearer: Meteor.user().services.epic.accessToken
+            },
+            credentials: 'same-origin'
+        }
         var client = mkFhir(config);
+        var pat = Meteor.user().services.epic.id
 
+        try {
+            res = client
+                .search({ type: 'Observation', patient: pat, query: { category: 'vital-signs' } })
+                .then(function (res) {
+                    return res
+                })
+            console.log('result: ' + res)
+            return res.data
+        } catch (e) {
+            console.log('error: '+e)
+            return res
+        }
+        /*
         client
-            .search({ type: 'Observation', query: { 'Temperature': '37' } })
+            .search({ type: 'Observation', patient: pat, query: {category: 'vital-signs' } })
             .then(function (res) {
                 var bundle = res.data;
-                var count = (bundle.entry && bundle.entry.length) || 0;
-                console.log("# Patients born in 1974: ", count);
+                console.log('obs', bundle);
                 return bundle
             })
             .catch(function (res) {
                 //Error responses
                 if (res.status) {
                     console.log('Error', res.status);
+                    //console.dir(res.data.issue)
+                    return res.status
                 }
-
                 //Errors
                 if (res.message) {
                     console.log('Error', res.message);
+                    return res.message
                 }
-            });
+        */
 
     },
     'getData': function (resource, option) {
@@ -44,7 +63,7 @@ Meteor.methods({
                         },
                         headers: {
                             Authorization: `Bearer ${accessToken}`,
-                            Accept: 'application/json'
+                            Accept: 'application/json, application/json+fhir'
                         }
                     })
                // console.dir(res)

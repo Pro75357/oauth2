@@ -14,12 +14,20 @@ Template.getdata.events({
 Template.obsSearch.events({
     'submit form'(event, instance) {
         event.preventDefault()
+        Meteor.call('fhir', function (err, res) {
+            if (err) {
+                console.log(err)
+            }
+            Session.set('Observation',res)
+        })
+        /*
         if (event.target.value == ''){
             option = 'Temperature'
         } else {
             option = event.target.value
         }
         setData('Observation', option)
+        */
     }
 })
 
